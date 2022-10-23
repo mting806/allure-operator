@@ -34,4 +34,3 @@ jobs:
         run: |
           docker run alpine/k8s kubectl get pod
           
-
