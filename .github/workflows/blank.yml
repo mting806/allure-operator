@@ -33,4 +33,6 @@ jobs:
       - name: Run a multi-line script
         run: |
           docker run --rm -v ~/.kube:/root/.kube alpine/k8s:1.24.7 kubectl get ns
+          pwd
+          ls -ls
           

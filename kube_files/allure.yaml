@@ -9,6 +9,6 @@ spec:
   nodeport_ui_port: 30009
   nodeport_ext_ip: 192.168.88.70
   ingress_fqdn: allure.test
-
+  storage_class: standard
 
   

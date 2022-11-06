@@ -32,8 +32,11 @@ spec:
                   type: string
                 ingress_fqdn:
                   type: string
+                storage_class:
+                  type: string
               required:
                 - expose_type
+                - storage_class
       additionalPrinterColumns:
         - name: TYPE
           type: string

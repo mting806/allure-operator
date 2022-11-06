@@ -3,9 +3,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: allure-persistent-volume-claim
 spec:
+  storageClassName: {{ allure_info["storage_class"] }}
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
       storage: 3Gi
+

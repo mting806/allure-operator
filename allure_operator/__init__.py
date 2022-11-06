@@ -9,16 +9,13 @@ from kubernetes.client.rest import ApiException
 
 @kopf.on.create("allure-docker-service.group", "v1", "allureopt")
 def create_allure(namespace, spec, **kwargs):
-#    if os.getenv("KUBERNETES_SERVICE_HOST"):
-#        template_path = "j2_template"
-#    else:
-#        template_path = "allure_operator/j2_template"
     template_path = "allure_operator/j2_template"
     template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_path))
     namespace = namespace
     expose_type = spec["expose_type"]
+    storage_class = spec["storage_class"]
     allure_info = {}
-    allure_pv_template = template_env.get_template("allure_pv.j2")
+    allure_info["storage_class"] = storage_class
     allure_pvc_template = template_env.get_template("allure_pvc.j2")
     allure_configmap_api_template = template_env.get_template("allure_configmap_api.j2")
     allure_configmap_ui_template = template_env.get_template("allure_configmap_ui.j2")
@@ -53,12 +50,10 @@ def create_allure(namespace, spec, **kwargs):
             kopf.adopt(allure_ingress_yaml)
         else:
             raise kopf.PermanentError("ingress data wrong") 
-    allure_pv_output = allure_pv_template.render(allure_info=allure_info)
     allure_pvc_output = allure_pvc_template.render(allure_info=allure_info)
     allure_configmap_api_output = allure_configmap_api_template.render(allure_info=allure_info)
     allure_configmap_ui_output = allure_configmap_ui_template.render(allure_info=allure_info)
     allure_deployment_output = allure_deployment_template.render(allure_info=allure_info)
-    allure_pv_yaml = yaml.safe_load(allure_pv_output)
     allure_pvc_yaml = yaml.safe_load(allure_pvc_output)
     allure_configmap_api_yaml = yaml.safe_load(allure_configmap_api_output)
     allure_configmap_ui_yaml = yaml.safe_load(allure_configmap_ui_output)
@@ -74,7 +69,6 @@ def create_allure(namespace, spec, **kwargs):
     core_api = client.CoreV1Api()
     network_api = client.NetworkingV1Api()
     try:
-        allure_pv = core_api.create_persistent_volume(body=allure_pv_yaml)
         allure_pvc = core_api.create_namespaced_persistent_volume_claim(namespace=namespace, body=allure_pvc_yaml)
         allure_configmap_api = core_api.create_namespaced_config_map(namespace=namespace, body=allure_configmap_api_yaml) 
         allure_configmap_ui = core_api.create_namespaced_config_map(namespace=namespace, body=allure_configmap_ui_yaml)
@@ -85,21 +79,11 @@ def create_allure(namespace, spec, **kwargs):
             allure_service = core_api.create_namespaced_service(namespace=namespace, body=allure_service_yaml)
             allure_ingress = network_api.create_namespaced_ingress(namespace=namespace, body=allure_ingress_yaml)
         return {
-            "PV": allure_pv.metadata.name,
             "PVC": allure_pvc.metadata.name,
             "CONFIGMAP_API": allure_configmap_api.metadata.name,
             "CONFIGMAP_UI": allure_configmap_ui.metadata.name,
             "DEPLOYMENT": allure_deployment.metadata.name,
             "UI": ui_url
             }
-    except ApiException as e:
-        raise kopf.PermanentError("Exception: %s\n" % e)
-
-@kopf.on.delete("allure-docker-service.group", "v1", "allureopt")
-def delete_allure(status, **kwargs):
-    core_api = client.CoreV1Api()
-    pv_name = status["create_allure"]["PV"]
-    try:
-        core_api.delete_persistent_volume(name=pv_name)
     except ApiException as e:
         raise kopf.PermanentError("Exception: %s\n" % e)
