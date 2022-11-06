@@ -19,37 +19,41 @@ spec:
               type: object
               x-kubernetes-preserve-unknown-fields: true
               properties:
-                job:
+                expose_type:
                   type: string
                   enum: 
-                    - iptables
-                    - reboot
-                  description: execute command
-                block_ip_list:
-                  type: array
-                  items:
-                    type: string
-                node_list:
-                  type: array
-                  items:
-                    type: string
+                    - ingress
+                    - nodeport
+                nodeport_api_port:
+                  type: integer
+                nodeport_ui_port:
+                  type: integer
+                nodeport_ext_ip:
+                  type: string
+                ingress_ui_fqdn:
+                  type: string
+                ingress_api_fqdn:
+                  type: string
+              required:
+                - expose_type
       additionalPrinterColumns:
-        - name: Job
+        - name: Type
           type: string
           priority: 0
-          jsonPath: .spec.job
-          description: job executed.
-        - name: Children
+          jsonPath: .spec.type
+          description: expose_type.
+        - name: Deployment
           type: string
           priority: 0
-          jsonPath: .status.test_opt.children
-          description: The children daemonset created.
-        - name: Message
+          jsonPath: .status.allureopt.deployment
+          description: The deployment created.
+        - name: UI
           type: string
           priority: 0
-          jsonPath: .status.test_opt.message
-          description: The comments.
+          jsonPath: .status.allureopt.ui
+          description: The ui url.
   scope: Namespaced
+#  scope: Cluster
   names:
     plural: allureopts
     singular: allureopt

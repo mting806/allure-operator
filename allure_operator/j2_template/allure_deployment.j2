@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allure-deployment
+  namespace: allure
+spec:
+  template:
+    metadata:
+      name: allure-container
+      labels:
+        type: app
+    spec:
+      containers:
+        - name: allure
+          image: 'frankescobar/allure-docker-service'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5050
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          envFrom:
+            - configMapRef:
+                name: allure-config-map
+#            - secretRef:
+#                name: allure-secret
+          volumeMounts:
+            - name: reports-volume
+              mountPath: /app/projects
+        - name: allure-ui
+          image: 'frankescobar/allure-docker-service-ui'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5252
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          envFrom:
+            - configMapRef:
+                name: allure-config-ui-map
+      volumes:
+        - name: reports-volume
+          persistentVolumeClaim:
+            claimName: allure-persistent-volume-claim
+  replicas: 1
+  selector:
+    matchLabels:
+      type: app
