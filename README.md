@@ -50,12 +50,12 @@ storage_class(string): the storage class name
 
 ### optional parameters:  
 
-nodeport_api_port(integer): api nodeport, needed for nodeport expose_type 
-nodeport_ui_port(integer): ui nodeport, needed for nodeport expose_type 
-nodeport_ext_ip(string): ip address for nodeport, needed for nodeport expose_type 
-ingress_fqdn(string): ingress fqdn, needed for ingress expose_type
+nodeport_api_port(integer): api nodeport, needed for nodeport expose_type  
+nodeport_ui_port(integer): ui nodeport, needed for nodeport expose_type  
+nodeport_ext_ip(string): ip address for nodeport, needed for nodeport expose_type   
+ingress_fqdn(string): ingress fqdn, needed for ingress expose_type  
 
-It will create below items in namespace <strong>allure</strong>:
+It will create below items in namespace <strong>allure</strong>:  
 
 <ol>
   <li>configmap for allure-docker-service api</li>
