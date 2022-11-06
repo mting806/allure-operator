@@ -1,6 +1,6 @@
 # allure-operator
 
-operator for deploy [allure-docker-service](https://github.com/fescobar/allure-docker-service)  
+Kubernetes operator for deploy [allure-docker-service](https://github.com/fescobar/allure-docker-service)  
 
 ## Kubernetes requirements
 
