@@ -33,5 +33,6 @@ jobs:
       - name: Run a multi-line script
         run: |
           docker run --rm -v ~/.kube:/root/.kube alpine/k8s:1.24.7 kubectl get ns
-          docker build . -f build/Dockerfile -t test
-          
+          docker build . -f build/Dockerfile -t mting/testopt:0.1
+          docker push mting/testopt:0.1
+          docker run --rm -v ~/.kube:/root/.kube alpine/k8s:1.24.7 kubectl apply -f kube_files/allure-operator-crd.yaml

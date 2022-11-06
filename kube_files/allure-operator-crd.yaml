@@ -61,44 +61,50 @@ spec:
     shortNames:
     - allure
 ---
-#
-#apiVersion: v1
-#kind: ServiceAccount
-#metadata:
-#  name: test-opt
-#  namespace: test
-#---
-#
-#apiVersion: rbac.authorization.k8s.io/v1
-#kind: ClusterRoleBinding
-#metadata:
-#  name: test-opt
-#  namespace: test
-#roleRef:
-#  apiGroup: rbac.authorization.k8s.io
-#  kind: ClusterRole
-#  name: cluster-admin
-#subjects:
-#  - kind: ServiceAccount
-#    name: test-opt
-#    namespace: test
-#---
-#
-#apiVersion: apps/v1
-#kind: Deployment
-#metadata:
-#  name: test-opt
-#  namespace: test
-#spec:
-#  selector:
-#    matchLabels:
-#      app: test-opt
-#  template:
-#    metadata:
-#      labels:
-#        app: test-opt
-#    spec:
-#      serviceAccountName: test-opt
-#      containers:
-#      - image: mting/testopt
-#        name: test-opt
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: allure
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: allureopt
+  namespace: allure
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: allureopt
+  namespace: allure
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: allureopt
+    namespace: allure
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allureopt
+  namespace: allure
+spec:
+  selector:
+    matchLabels:
+      app: allureopt
+  template:
+    metadata:
+      labels:
+        app: allureopt
+    spec:
+      serviceAccountName: allureopt
+      containers:
+      - image: mting/allureopt:0.1
+        name: allureopt
