@@ -66,7 +66,14 @@ def create_allure(name, namespace, spec, **kwargs):
         allure_deployment = apps_api.create_namespaced_deployment(namespace=namespace, body=allure_deployment_yaml)
         if expose_type == "nodeport":
             allure_nodeport = core_api.create_namespaced_service(namespace=namespace, body=allure_nodeport_yaml)
-#        return {"deployment": "ddd", "ui": ui_url}
+        return {
+            "PV": allure_pv.metadata.name,
+            "PVC": allure_pvc.metadata.name,
+            "CONFIGMAP_API": allure_configmap_api.metadata.name,
+            "CONFIGMAP_UI": allure_configmap_ui.metadata.name,
+            "DEPLOYMENT": allure_deployment.metadata.name,
+            "UI": ui_url
+            }
     except ApiException as e:
         raise kopf.PermanentError("Exception: %s\n" % e)
 

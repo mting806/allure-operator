@@ -37,20 +37,20 @@ spec:
               required:
                 - expose_type
       additionalPrinterColumns:
-        - name: Type
+        - name: TYPE
           type: string
           priority: 0
-          jsonPath: .spec.type
+          jsonPath: .spec.expose_type
           description: expose_type.
-        - name: Deployment
+        - name: DEPLOYMENT
           type: string
           priority: 0
-          jsonPath: .status.allureopt.deployment
+          jsonPath: .status.create_allure.DEPLOYMENT
           description: The deployment created.
         - name: UI
           type: string
           priority: 0
-          jsonPath: .status.allureopt.ui
+          jsonPath: .status.create_allure.UI
           description: The ui url.
   scope: Namespaced
 #  scope: Cluster
