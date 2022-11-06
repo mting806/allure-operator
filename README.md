@@ -2,13 +2,13 @@
 
 operator for deploy [allure-docker-service](https://github.com/fescobar/allure-docker-service)  
 
-## kubernetes requirements
+## Kubernetes requirements
 
 [storage_class](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required, for example [k3s local-path](https://github.com/k3s-io/k3s/blob/master/manifests/local-storage.yaml) . 
 
 [ingress-nginx](https://github.com/kubernetes/ingress-nginx) is required for ingress expose
 
-## installation
+## Installation
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/mting806/allure-operator/main/kube_files/allure-operator-crd.yaml
@@ -23,7 +23,7 @@ It will create below items:
   <li>deployment <strong>allureopt</strong> in namespace <strong>allure</strong></li>
 </ol>
 
-## usage
+## Usage
 
 allure-opt monitor the crd in namespace <strong>allure</strong>, it will create allure-docker-service by definition of <strong>allureopts.allure-docker-service.group:v1</strong> api 
 
@@ -43,12 +43,12 @@ spec:
   
 ```
 
-### mandatory parameters:    
+### Mandatory parameters:    
 
 expose_type(string): "ingress" or "nodeport"  
 storage_class(string): the storage class name  
 
-### optional parameters:  
+### Optional parameters:  
 
 nodeport_api_port(integer): api nodeport, needed for nodeport expose_type  
 nodeport_ui_port(integer): ui nodeport, needed for nodeport expose_type  
@@ -64,3 +64,9 @@ It will create below items in namespace <strong>allure</strong>:
   <li>service for allure-docker-service api and allure-docker-service ui</li>
   <li>ingress to item 4</li>
 </ol>
+
+## TODO
+
+add more supported parameters  
+
+......
