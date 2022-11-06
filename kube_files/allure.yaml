@@ -3,12 +3,12 @@ kind: AllureOpt
 metadata:
   name: allure
 spec:
-  expose_type: nodeport
+#  expose_type: nodeport
+  expose_type: ingress
   nodeport_api_port: 30008
   nodeport_ui_port: 30009
   nodeport_ext_ip: 192.168.88.70
-  ingress_ui_fqdn:
-  ingress_api_fqdn:
+  ingress_fqdn: allure.test
 
 
   

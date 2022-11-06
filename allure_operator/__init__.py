@@ -8,14 +8,13 @@ from kubernetes import config
 from kubernetes.client.rest import ApiException
 
 @kopf.on.create("allure-docker-service.group", "v1", "allureopt")
-def create_allure(name, namespace, spec, **kwargs):
+def create_allure(namespace, spec, **kwargs):
 #    if os.getenv("KUBERNETES_SERVICE_HOST"):
 #        template_path = "j2_template"
 #    else:
 #        template_path = "allure_operator/j2_template"
     template_path = "allure_operator/j2_template"
     template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_path))
-    name = name
     namespace = namespace
     expose_type = spec["expose_type"]
     allure_info = {}
@@ -25,6 +24,8 @@ def create_allure(name, namespace, spec, **kwargs):
     allure_configmap_ui_template = template_env.get_template("allure_configmap_ui.j2")
     allure_deployment_template = template_env.get_template("allure_deployment.j2")
     allure_nodeport_template = template_env.get_template("allure_nodeport.j2")
+    allure_service_template = template_env.get_template("allure_service.j2")
+    allure_ingress_template = template_env.get_template("allure_ingress.j2")
     if expose_type == "nodeport":
         nodeport_ext_ip = spec["nodeport_ext_ip"]
         nodeport_api_port = spec["nodeport_api_port"]
@@ -39,6 +40,19 @@ def create_allure(name, namespace, spec, **kwargs):
             kopf.adopt(allure_nodeport_yaml)
         else:
             raise kopf.PermanentError("nodeport data wrong")
+    if expose_type == "ingress":
+        ingress_fqdn = spec["ingress_fqdn"]
+        if len(ingress_fqdn) > 0:
+            ui_url = f"http://{ingress_fqdn}"
+            allure_info["ingress_fqdn"] = ingress_fqdn
+            allure_service_output = allure_service_template.render(allure_info=allure_info)
+            allure_ingress_output = allure_ingress_template.render(allure_info=allure_info)
+            allure_service_yaml = yaml.safe_load(allure_service_output)
+            allure_ingress_yaml = yaml.safe_load(allure_ingress_output)
+            kopf.adopt(allure_service_yaml)
+            kopf.adopt(allure_ingress_yaml)
+        else:
+            raise kopf.PermanentError("ingress data wrong") 
     allure_pv_output = allure_pv_template.render(allure_info=allure_info)
     allure_pvc_output = allure_pvc_template.render(allure_info=allure_info)
     allure_configmap_api_output = allure_configmap_api_template.render(allure_info=allure_info)
@@ -58,6 +72,7 @@ def create_allure(name, namespace, spec, **kwargs):
         config.load_kube_config(kube_config)
     apps_api = client.AppsV1Api()
     core_api = client.CoreV1Api()
+    network_api = client.NetworkingV1Api()
     try:
         allure_pv = core_api.create_persistent_volume(body=allure_pv_yaml)
         allure_pvc = core_api.create_namespaced_persistent_volume_claim(namespace=namespace, body=allure_pvc_yaml)
@@ -66,6 +81,9 @@ def create_allure(name, namespace, spec, **kwargs):
         allure_deployment = apps_api.create_namespaced_deployment(namespace=namespace, body=allure_deployment_yaml)
         if expose_type == "nodeport":
             allure_nodeport = core_api.create_namespaced_service(namespace=namespace, body=allure_nodeport_yaml)
+        if expose_type == "ingress":
+            allure_service = core_api.create_namespaced_service(namespace=namespace, body=allure_service_yaml)
+            allure_ingress = network_api.create_namespaced_ingress(namespace=namespace, body=allure_ingress_yaml)
         return {
             "PV": allure_pv.metadata.name,
             "PVC": allure_pvc.metadata.name,
@@ -78,9 +96,10 @@ def create_allure(name, namespace, spec, **kwargs):
         raise kopf.PermanentError("Exception: %s\n" % e)
 
 @kopf.on.delete("allure-docker-service.group", "v1", "allureopt")
-def delete_allure(name, namespace, spec, **kwargs):
+def delete_allure(status, **kwargs):
     core_api = client.CoreV1Api()
+    pv_name = status["create_allure"]["PV"]
     try:
-        core_api.delete_persistent_volume(name="allure-persistent-volume")
+        core_api.delete_persistent_volume(name=pv_name)
     except ApiException as e:
         raise kopf.PermanentError("Exception: %s\n" % e)
