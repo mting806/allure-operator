@@ -27,6 +27,19 @@ It will create below items:
 
 allure-opt monitor the crd in namespace <strong>allure</strong>, it will create allure-docker-service by definition of <strong>allureopts.allure-docker-service.group:v1</strong> api 
 
+deploy allure-docker-server 
+
+```
+kubectl apply -f allure.yaml -n allure
+```
+
+delete allure-docker-server 
+
+```
+kubectl delete -f allure.yaml -n allure
+```
+
+allure.yaml  
 ```
 apiVersion: allure-docker-service.group/v1
 kind: AllureOpt
