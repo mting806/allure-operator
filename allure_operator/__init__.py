@@ -8,7 +8,21 @@ from kubernetes import config
 from kubernetes.client.rest import ApiException
 
 @kopf.on.create("allure-docker-service.group", "v1", "allureopt")
-def create_allure(namespace, spec, **kwargs):
+def create_allure(namespace: str, spec: dict, **kwargs):
+    """obj create hook
+
+    Args:
+        namespace (str): namespace
+        spec (dict): spec dict
+
+    Raises:
+        kopf.PermanentError: ingress data err
+        kopf.PermanentError: nodeport data err
+        kopf.PermanentError: k8s api call err
+
+    Returns:
+        dict: status dict
+    """
     template_path = "allure_operator/j2_template"
     template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_path))
     namespace = namespace
