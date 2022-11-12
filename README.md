@@ -4,7 +4,7 @@ Kubernetes operator for deploy [allure-docker-service](https://github.com/fescob
 
 ## Kubernetes requirements
 
-[storage_class](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required, for example [k3s local-path](https://github.com/k3s-io/k3s/blob/master/manifests/local-storage.yaml) . 
+[storage_class](https://kubernetes.io/docs/concepts/storage/storage-classes/) that support ReadWriteMany is required, for example [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner) . 
 
 [ingress-nginx](https://github.com/kubernetes/ingress-nginx) is required for ingress expose
 

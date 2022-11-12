@@ -25,7 +25,7 @@ spec:
 #                name: allure-secret
           volumeMounts:
             - name: reports-volume
-              mountPath: /app/projects
+              mountPath: /app/allure-results
         - name: allure-ui
           image: 'frankescobar/allure-docker-service-ui:7.0.3'
           imagePullPolicy: IfNotPresent

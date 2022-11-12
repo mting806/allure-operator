@@ -34,6 +34,10 @@ spec:
                   type: string
                 storage_class:
                   type: string
+                loop_timer:
+                  type: integer
+                loop_pytest_ver:
+                  type: string
               required:
                 - expose_type
                 - storage_class
@@ -43,16 +47,28 @@ spec:
           priority: 0
           jsonPath: .spec.expose_type
           description: expose_type.
-        - name: DEPLOYMENT
+        - name: ALLURE_DEPLOYMENT
           type: string
           priority: 0
-          jsonPath: .status.create_allure.DEPLOYMENT
+          jsonPath: .status.create_allure.ALLURE_DEPLOYMENT
           description: The deployment created(from fn create_allure).
         - name: UI
           type: string
           priority: 0
           jsonPath: .status.create_allure.UI
           description: The ui url(from fn create_allure).
+        - name: LOOP_PYTEST_DEPLOYMENT
+          type: string
+          priority: 0
+          jsonPath: .status.create_allure.LOOP_PYTEST_DEPLOYMENT
+        - name: LOOP_TIMER
+          type: integer
+          priority: 0
+          jsonPath: .status.create_allure.LOOP_TIMER
+        - name: LOOP_PYTEST_VER
+          type: string
+          priority: 0
+          jsonPath: .status.create_allure.LOOP_PYTEST_VER
   scope: Namespaced
   names:
     plural: allureopts

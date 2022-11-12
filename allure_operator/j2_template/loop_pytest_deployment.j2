@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loop-pytest-deployment
+spec:
+  template:
+    metadata:
+      name: loop-pytest-container
+      labels:
+        type: app
+    spec:
+      containers:
+        - name: loop-pytest
+          image: 'mting/loop_pytest:{{ allure_info.loop_pytest_ver }}'
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          volumeMounts:
+            - name: reports-volume
+              mountPath: /app/allure-results
+          command: ["/bin/sh", "-c"]
+          args:
+          - |
+            sleep 60
+            while true
+              do
+                date
+                python -m pytest test.py -s -v --alluredir=/app/allure-results
+                sleep {{ allure_info.loop_timer }}
+              done
+      volumes:
+        - name: reports-volume
+          persistentVolumeClaim:
+            claimName: allure-persistent-volume-claim
+  replicas: 1
+  selector:
+    matchLabels:
+      type: app

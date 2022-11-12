@@ -1,0 +1,8 @@
+FROM python:3.9.14-alpine
+RUN addgroup --gid 1000 allure && \
+    adduser -u 1000 -G allure -D -s /bin/sh allure
+USER allure
+COPY ./loop_pytest /loop_pytest
+WORKDIR /loop_pytest
+RUN pip install -r ./requirements.txt
+CMD sleep 3600

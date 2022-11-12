@@ -34,6 +34,10 @@ spec:
                   type: string
                 storage_class:
                   type: string
+                loop_timer:
+                  type: integer
+                loop_pytest_ver:
+                  type: string
               required:
                 - expose_type
                 - storage_class
@@ -53,6 +57,15 @@ spec:
           priority: 0
           jsonPath: .status.create_allure.UI
           description: The ui url(from fn create_allure).
+        - name: LOOP_TIMER
+          type: string
+          priority: 0
+          jsonPath: .status.create_allure.LOOP_TIMER
+        - name: LOOP_PYTEST_VER
+          type: string
+          priority: 0
+          jsonPath: .status.create_allure.LOOP_PYTEST_VER
+
   scope: Namespaced
   names:
     plural: allureopts
@@ -106,5 +119,5 @@ spec:
     spec:
       serviceAccountName: allureopt
       containers:
-      - image: mting/allureopt:0.1
+      - image: mting/allureopt:0.2
         name: allureopt
