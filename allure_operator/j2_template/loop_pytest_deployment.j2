@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
         - name: loop-pytest
-          image: 'mting/loop_pytest:{{ allure_info.loop_pytest_ver }}'
+          image: '{{ allure_info.loop_pytest_image }}'
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 1000
@@ -26,7 +26,10 @@ spec:
             while true
               do
                 date
-                python -m pytest test.py -s -v --alluredir=/app/allure-results
+                if [[ {{ allure_info.loop_pytest }} == True ]]
+                then
+                  {{ allure_info.pytest_cmd }} --alluredir=/app/allure-results
+                fi
                 sleep {{ allure_info.loop_timer }}
               done
       volumes:

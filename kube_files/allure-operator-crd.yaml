@@ -18,60 +18,79 @@ spec:
             spec:
               type: object
               x-kubernetes-preserve-unknown-fields: true
+              x-kubernetes-validations:
+                - message: expose_type ingress must has ingress_fqdn, expose_type nodeport must has nodeport_api_port, nodeport_ui_port and nodeport_ext_ip
+                  rule: "self.expose_type=='ingress' && has(self.ingress_fqdn) || self.expose_type=='nodeport' && has(self.nodeport_api_port) && has(self.nodeport_ui_port) && has(self.nodeport_ext_ip)"
+                - message: Value is immutable
+                  rule: self.expose_type == oldSelf.expose_type
+                - message: Value is immutable
+                  rule: self.nodeport_api_port == oldSelf.nodeport_api_port
+                - message: Value is immutable
+                  rule: self.nodeport_ui_port == oldSelf.nodeport_ui_port
+                - message: Value is immutable
+                  rule: self.nodeport_ext_ip == oldSelf.nodeport_ext_ip
+                - message: Value is immutable
+                  rule: self.ingress_fqdn == oldSelf.ingress_fqdn
+                - message: Value is immutable
+                  rule: self.storage_class == oldSelf.storage_class
+                - message: Value is immutable
+                  rule: self.loop_timer == oldSelf.loop_timer
+                - message: Value is immutable
+                  rule: self.pvc_size == oldSelf.pvc_size
               properties:
                 expose_type:
                   type: string
                   enum: 
                     - ingress
                     - nodeport
-                  x-kubernetes-validations:
-                    - message: Value is immutable
-                      rule: self == oldSelf
                 nodeport_api_port:
-                  type: integer
-                  x-kubernetes-validations:
-                    - message: Value is immutable
-                      rule: self == oldSelf
+                  type: integer 
                 nodeport_ui_port:
                   type: integer
-                  x-kubernetes-validations:
-                    - message: Value is immutable
-                      rule: self == oldSelf
                 nodeport_ext_ip:
                   type: string
-                  x-kubernetes-validations:
-                    - message: Value is immutable
-                      rule: self == oldSelf
                 ingress_fqdn:
                   type: string
-                  x-kubernetes-validations:
-                    - message: Value is immutable
-                      rule: self == oldSelf
                 storage_class:
+                  type: string
+                pvc_size:
                   type: string
                 loop_timer:
                   type: integer
-                loop_pytest_ver:
+                loop_pytest:
+                  type: boolean
+                  enum: 
+                    - yes
+                    - no
+                loop_pytest_image:
+                  type: string
+                pytest_cmd:
                   type: string
               required:
                 - expose_type
                 - storage_class
+                - loop_pytest
+                - loop_timer
+                - loop_pytest_image
+                - pvc_size
+                - pytest_cmd
       additionalPrinterColumns:
         - name: TYPE
           type: string
           priority: 0
           jsonPath: .spec.expose_type
-          description: expose_type.
+        - name: PVC_SIZE
+          type: string
+          priority: 0 
+          jsonPath: .spec.pvc_size
         - name: ALLURE_DEPLOYMENT
           type: string
           priority: 0
           jsonPath: .status.create_allure.ALLURE_DEPLOYMENT
-          description: The deployment created(from fn create_allure).
         - name: UI
           type: string
           priority: 0
           jsonPath: .status.create_allure.UI
-          description: The ui url(from fn create_allure).
         - name: LOOP_PYTEST_DEPLOYMENT
           type: string
           priority: 0
@@ -79,11 +98,19 @@ spec:
         - name: LOOP_TIMER
           type: integer
           priority: 0
-          jsonPath: .status.create_allure.LOOP_TIMER
-        - name: LOOP_PYTEST_VER
+          jsonPath: .spec.loop_timer
+        - name: LOOP_PYTEST
+          type: boolean
+          priority: 0
+          jsonPath: .spec.loop_pytest
+        - name: LOOP_PYTEST_IMAGE
           type: string
           priority: 0
-          jsonPath: .status.create_allure.LOOP_PYTEST_VER
+          jsonPath: .spec.loop_pytest_image
+        - name: PYTEST_CMD
+          type: string
+          priority: 0
+          jsonPath: .spec.pytest_cmd
   scope: Namespaced
   names:
     plural: allureopts

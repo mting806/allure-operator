@@ -34,5 +34,5 @@ class KubeTool(object):
     def patch_namespaced_deployment(self, name: str, namespace: str, body: yaml):
         return self._apps_api.patch_namespaced_deployment(name=name, namespace=namespace, body=body)
 
-    def ss(self, name: str, namespace: str):
+    def delete_namespaced_deployment(self, name: str, namespace: str):
         return self._apps_api.delete_namespaced_deployment(name=name, namespace=namespace)

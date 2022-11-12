@@ -7,21 +7,24 @@ class AllureSpec(object):
     spec: InitVar
     expose_type: str = field(init=False)
     storage_class: str = field(init=False)
-    nodeport_ext_ip: str = field(init=False)
-    nodeport_api_port: int = field(init=False)
-    nodeport_ui_port: int = field(init=False)
-    ingress_fqdn: str = field(init=False)
+    loop_timer: int = field(init=False)
+    loop_pytest: bool = field(init=False)
+    loop_pytest_image: str = field(init=False)
+    pvc_size: str = field(init=False)
+    nodeport_ext_ip: str  = None
+    nodeport_api_port: int  = None
+    nodeport_ui_port: int  = None
+    ingress_fqdn: str  = None
     api_public_url: str = field(init=False)
     ui_url: str = field(init=False)
-    loop_pytest_ver: str = None
-    loop_timer: int = None
     def __post_init__(self, spec: dict):
         self.expose_type = spec["expose_type"]
         self.storage_class = spec["storage_class"]
-        if "loop_timer" in spec:
-            self.loop_timer = spec["loop_timer"]  
-        if "loop_pytest_ver" in spec:
-            self.loop_pytest_ver = spec["loop_pytest_ver"]  
+        self.loop_timer = spec["loop_timer"]
+        self.loop_pytest = spec["loop_pytest"]
+        self.loop_pytest_image = spec["loop_pytest_image"] 
+        self.pvc_size = spec["pvc_size"]
+        self.pytest_cmd = spec["pytest_cmd"]
         if self.expose_type == "nodeport":
             self.nodeport_ext_ip = spec["nodeport_ext_ip"]
             self.nodeport_api_port = spec["nodeport_api_port"]

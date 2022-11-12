@@ -10,6 +10,8 @@ spec:
   nodeport_ext_ip: 192.168.88.70
   ingress_fqdn: allure.test
   storage_class: nfs-client
+  pvc_size: 1Gi
   loop_timer: 30
-  loop_pytest_ver: "0.4" 
-  
+  loop_pytest: yes
+  loop_pytest_image: "mting/loop_pytest:0.4" 
+  pytest_cmd: "python -m pytest test.py -v -s"

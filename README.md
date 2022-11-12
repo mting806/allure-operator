@@ -4,14 +4,14 @@ Kubernetes operator for deploy [allure-docker-service](https://github.com/fescob
 
 ## Kubernetes requirements
 
-[storage_class](https://kubernetes.io/docs/concepts/storage/storage-classes/) that support ReadWriteMany is required, for example [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner) . 
+[storage_class](https://kubernetes.io/docs/concepts/storage/storage-classes/) that support ReadWriteMany is required, for example [nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner)  
 
 [ingress-nginx](https://github.com/kubernetes/ingress-nginx) is required for ingress expose
 
 ## Installation
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/mting806/allure-operator/main/kube_files/allure-operator-crd.yaml
+kubectl apply -f https://raw.githubusercontent.com/mting806/allure-operator/main/kube_files/allure-operator-all.yaml
 ```
 
 It will create below items:
@@ -27,17 +27,7 @@ It will create below items:
 
 allure-opt monitor the crd in namespace <strong>allure</strong>, it will create allure-docker-service by definition of <strong>allureopts.allure-docker-service.group:v1</strong> api 
 
-deploy allure-docker-server 
-
-```
-kubectl apply -f allure.yaml -n allure
-```
-
-delete allure-docker-server 
-
-```
-kubectl delete -f allure.yaml -n allure
-```
+### Configuration
 
 allure.yaml  
 ```
@@ -48,25 +38,42 @@ metadata:
 spec:
 #  expose_type: nodeport
   expose_type: ingress
-  storage_class: standard
   nodeport_api_port: 30008
   nodeport_ui_port: 30009
   nodeport_ext_ip: 192.168.88.70
   ingress_fqdn: allure.test
-  
+  storage_class: nfs-client
+  pvc_size: 1Gi
+  loop_timer: 30
+  loop_pytest: yes
+#  loop_pytest: no
+  loop_pytest_image: "mting/loop_pytest:0.4" 
+  pytest_cmd: "python -m pytest test.py" 
 ```
 
-### Mandatory parameters:    
+#### Mandatory parameters:    
+```
+expose_type(string)(immutable): "ingress" or "nodeport"  
+storage_class(string)(immutable): the storage class name  
+loop_pytest(bool): "yes" or "no"  
+loop_timer(int)(immutable): pytest loop timer in second  
+loop_pytest_image(string): pytest image   
+pvc_size(string)(immutable): pvc size
+pytest_cmd(string): pytest command in pytest_loop deployment
+```
+#### Optional parameters:  
+```
+nodeport_api_port(integer)(immutable): api nodeport, needed for nodeport expose_type  
+nodeport_ui_port(integer)(immutable): ui nodeport, needed for nodeport expose_type  
+nodeport_ext_ip(string)(immutable): ip address for nodeport, needed for nodeport expose_type   
+ingress_fqdn(string)(immutable): ingress fqdn, needed for ingress expose_type  
+```
 
-expose_type(string): "ingress" or "nodeport"  
-storage_class(string): the storage class name  
+### Deploy allure object
 
-### Optional parameters:  
-
-nodeport_api_port(integer): api nodeport, needed for nodeport expose_type  
-nodeport_ui_port(integer): ui nodeport, needed for nodeport expose_type  
-nodeport_ext_ip(string): ip address for nodeport, needed for nodeport expose_type   
-ingress_fqdn(string): ingress fqdn, needed for ingress expose_type  
+```
+kubectl apply -f allure.yaml -n allure
+```
 
 It will create below items in namespace <strong>allure</strong>:  
 
@@ -76,11 +83,45 @@ It will create below items in namespace <strong>allure</strong>:
   <li>nodeport service for allure-docker-service api and allure-docker-service ui</li>
   <li>service for allure-docker-service api and allure-docker-service ui</li>
   <li>ingress to item 4</li>
+  <li>allure deployment</li>
+  <li>loop pytest deployment</li>
 </ol>
 
-## TODO
+```
+/ # kubectl get allure -n allure
+NAME     TYPE      PVC_SIZE   ALLURE_DEPLOYMENT   UI                   LOOP_PYTEST_DEPLOYMENT   LOOP_TIMER   LOOP_PYTEST   LOOP_PYTEST_IMAGE       PYTEST_CMD
+allure   ingress   1Gi        allure-deployment   http://allure.test   loop-pytest-deployment   30           false         mting/loop_pytest:0.4   python -m pytest test.py
+```
 
-add more supported parameters  
+### Update allure object
 
-......
+pytest loop run or not,  
+pytest image,  
+pytest command  
+could be changed by
 
+```
+loop_pytest(bool): "yes" or "no" 
+loop_pytest_image(string): pytest image 
+pytest_cmd(string): pytest command in pytest_loop deployment
+```
+then
+```
+kubectl apply -f allure.yaml -n allure
+```
+
+Or direcy edit deployment
+```
+kubectl edit depolyment loop-pytest-deployment -n allure
+```
+
+### Delete allure object
+
+```
+kubectl delete -f allure.yaml -n allure
+```
+
+### Cleanup all
+```
+kubectl delete -f https://raw.githubusercontent.com/mting806/allure-operator/main/kube_files/allure-operator-all.yaml
+```
