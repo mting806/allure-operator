@@ -25,7 +25,7 @@ It will create below items:
 
 ## Usage
 
-allure-opt monitor the crd in namespace <strong>allure</strong>, it will create allure-docker-service by definition of <strong>allureopts.allure-docker-service.group:v1</strong> api 
+allure-opt monitor the crd in namespace <strong>allure</strong>, it will create allure object and loop pytest by definition of <strong>allureopts.allure-docker-service.group:v1</strong> api 
 
 ### Configuration
 
