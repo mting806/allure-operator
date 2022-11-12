@@ -38,7 +38,7 @@ def create_allure(namespace: str, spec: dict, **kwargs):
             kopf.adopt(allure_ingress_yaml)
         else:
             raise kopf.PermanentError("ingress data wrong") 
-    if len(allure_info.loop_pytest_ver) > 0 and allure_info.loop_timer > 0:
+    if allure_info.loop_pytest_ver and allure_info.loop_timer:
         loop_pytest_deployment_yaml = j2_template.loop_pytest_deployment_yaml
         kopf.adopt(loop_pytest_deployment_yaml)
     allure_pvc_yaml = j2_template.allure_pvc_yaml
@@ -50,6 +50,7 @@ def create_allure(namespace: str, spec: dict, **kwargs):
     kopf.adopt(allure_configmap_ui_yaml)
     kopf.adopt(allure_deployment_yaml)
     try:
+        LOOP_PYTEST_DEPLOYMENT = None
         allure_pvc = kube_tool.create_namespaced_persistent_volume_claim(namespace=namespace, body=allure_pvc_yaml)
         allure_configmap_api = kube_tool.create_namespaced_config_map(namespace=namespace, body=allure_configmap_api_yaml) 
         allure_configmap_ui = kube_tool.create_namespaced_config_map(namespace=namespace, body=allure_configmap_ui_yaml)
@@ -59,18 +60,27 @@ def create_allure(namespace: str, spec: dict, **kwargs):
         if allure_info.expose_type == "ingress":
             allure_service = kube_tool.create_namespaced_service(namespace=namespace, body=allure_service_yaml)
             allure_ingress = kube_tool.create_namespaced_ingress(namespace=namespace, body=allure_ingress_yaml)
-        if len(allure_info.loop_pytest_ver) > 0 and allure_info.loop_timer > 0:
+        if allure_info.loop_pytest_ver and allure_info.loop_timer:
             loop_pytest_deployment_yaml
             loop_pytest_deployment = kube_tool.create_namespaced_deployment(namespace=namespace, body=loop_pytest_deployment_yaml)
+            LOOP_PYTEST_DEPLOYMENT = loop_pytest_deployment.metadata.name
         return {
             "PVC": allure_pvc.metadata.name,
             "CONFIGMAP_API": allure_configmap_api.metadata.name,
             "CONFIGMAP_UI": allure_configmap_ui.metadata.name,
             "ALLURE_DEPLOYMENT": allure_deployment.metadata.name,
             "UI": allure_info.ui_url,
-            "LOOP_PYTEST_DEPLOYMENT": loop_pytest_deployment.metadata.name,
+            "LOOP_PYTEST_DEPLOYMENT": LOOP_PYTEST_DEPLOYMENT,
             "LOOP_TIMER": allure_info.loop_timer,
             "LOOP_PYTEST_VER": allure_info.loop_pytest_ver,
             }
     except ApiException as e:
         raise kopf.PermanentError("Exception: %s\n" % e)
+
+
+@kopf.on.update("allure-docker-service.group", "v1", "allureopt")
+def create_allure(namespace: str, spec: dict, **kwargs):
+    namespace = namespace
+    allure_info = AllureSpec(spec=spec)
+    j2_template = J2Template(allure_info=allure_info)
+    kube_tool = KubeTool()

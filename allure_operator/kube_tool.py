@@ -14,6 +14,7 @@ class KubeTool(object):
         self._apps_api = client.AppsV1Api()
         self._core_api = client.CoreV1Api()
         self._network_api = client.NetworkingV1Api()
+        
 
     def create_namespaced_persistent_volume_claim(self, namespace: str, body: yaml):
         return self._core_api.create_namespaced_persistent_volume_claim(namespace=namespace, body=body)
@@ -29,3 +30,9 @@ class KubeTool(object):
 
     def create_namespaced_ingress(self, namespace: str, body: yaml):
         return self._network_api.create_namespaced_ingress(namespace=namespace, body=body)
+
+    def patch_namespaced_deployment(self, name: str, namespace: str, body: yaml):
+        return self._apps_api.patch_namespaced_deployment(name=name, namespace=namespace, body=body)
+
+    def ss(self, name: str, namespace: str):
+        return self._apps_api.delete_namespaced_deployment(name=name, namespace=namespace)

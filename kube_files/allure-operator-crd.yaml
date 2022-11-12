@@ -24,14 +24,29 @@ spec:
                   enum: 
                     - ingress
                     - nodeport
+                  x-kubernetes-validations:
+                    - message: Value is immutable
+                      rule: self == oldSelf
                 nodeport_api_port:
                   type: integer
+                  x-kubernetes-validations:
+                    - message: Value is immutable
+                      rule: self == oldSelf
                 nodeport_ui_port:
                   type: integer
+                  x-kubernetes-validations:
+                    - message: Value is immutable
+                      rule: self == oldSelf
                 nodeport_ext_ip:
                   type: string
+                  x-kubernetes-validations:
+                    - message: Value is immutable
+                      rule: self == oldSelf
                 ingress_fqdn:
                   type: string
+                  x-kubernetes-validations:
+                    - message: Value is immutable
+                      rule: self == oldSelf
                 storage_class:
                   type: string
                 loop_timer:

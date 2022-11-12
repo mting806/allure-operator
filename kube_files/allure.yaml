@@ -9,8 +9,7 @@ spec:
   nodeport_ui_port: 30009
   nodeport_ext_ip: 192.168.88.70
   ingress_fqdn: allure.test
-#  storage_class: standard
   storage_class: nfs-client
   loop_timer: 30
-  loop_pytest_ver: "0.3"
+  loop_pytest_ver: "0.4" 
   
