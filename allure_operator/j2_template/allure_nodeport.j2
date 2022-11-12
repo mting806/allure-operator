@@ -8,10 +8,10 @@ spec:
     - name: allure-api
       port: 5050
       targetPort: 5050
-      nodePort: {{ allure_info["nodeport_api_port"] }}
+      nodePort: {{ allure_info.nodeport_api_port }}
     - name: allure-ui
       port: 5252
       targetPort: 5252
-      nodePort: {{ allure_info["nodeport_ui_port"] }}
+      nodePort: {{ allure_info.nodeport_ui_port }}
   selector:
     type: app

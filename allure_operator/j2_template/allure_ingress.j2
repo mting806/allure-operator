@@ -13,7 +13,7 @@ spec:
 #      hosts:
 #        - my-domain.com
   rules:
-    - host: {{ allure_info["ingress_fqdn"] }}
+    - host: {{ allure_info.ingress_fqdn }}
       http:
         paths:
           - path: /allure-api/?(.*)

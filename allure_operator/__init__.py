@@ -1,11 +1,8 @@
-import os
 import kopf
-import yaml
-import jinja2
-from pathlib import Path
-from kubernetes import client
-from kubernetes import config
 from kubernetes.client.rest import ApiException
+from allure_operator.j2_tool import J2Template
+from allure_operator.kube_tool import KubeTool
+from allure_operator.allure_spec import AllureSpec
 
 @kopf.on.create("allure-docker-service.group", "v1", "allureopt")
 def create_allure(namespace: str, spec: dict, **kwargs):
@@ -23,81 +20,51 @@ def create_allure(namespace: str, spec: dict, **kwargs):
     Returns:
         dict: status dict
     """
-    template_path = "allure_operator/j2_template"
-    template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_path))
     namespace = namespace
-    expose_type = spec["expose_type"]
-    storage_class = spec["storage_class"]
-    allure_info = {}
-    allure_info["storage_class"] = storage_class
-    allure_pvc_template = template_env.get_template("allure_pvc.j2")
-    allure_configmap_api_template = template_env.get_template("allure_configmap_api.j2")
-    allure_configmap_ui_template = template_env.get_template("allure_configmap_ui.j2")
-    allure_deployment_template = template_env.get_template("allure_deployment.j2")
-    allure_nodeport_template = template_env.get_template("allure_nodeport.j2")
-    allure_service_template = template_env.get_template("allure_service.j2")
-    allure_ingress_template = template_env.get_template("allure_ingress.j2")
-    if expose_type == "nodeport":
-        nodeport_ext_ip = spec["nodeport_ext_ip"]
-        nodeport_api_port = spec["nodeport_api_port"]
-        nodeport_ui_port = spec["nodeport_ui_port"]
-        if nodeport_api_port > 0 and nodeport_ui_port > 0 and len(nodeport_ext_ip) > 0:            
-            ui_url = f"http://{nodeport_ext_ip}:{nodeport_ui_port}"
-            allure_info["nodeport_api_port"] = nodeport_api_port
-            allure_info["nodeport_ui_port"] = nodeport_ui_port
-            allure_info["api_public_url"] = f"http://{nodeport_ext_ip}:{nodeport_api_port}"
-            allure_nodeport_output = allure_nodeport_template.render(allure_info=allure_info)
-            allure_nodeport_yaml = yaml.safe_load(allure_nodeport_output)
+    allure_info = AllureSpec(spec=spec)
+    j2_template = J2Template(allure_info=allure_info)
+    kube_tool = KubeTool()
+    if allure_info.expose_type == "nodeport":
+        if allure_info.nodeport_api_port > 0 and allure_info.nodeport_ui_port > 0 and len(allure_info.nodeport_ext_ip) > 0:            
+            allure_nodeport_yaml = j2_template.allure_nodeport_yaml
             kopf.adopt(allure_nodeport_yaml)
         else:
             raise kopf.PermanentError("nodeport data wrong")
-    if expose_type == "ingress":
-        ingress_fqdn = spec["ingress_fqdn"]
-        if len(ingress_fqdn) > 0:
-            ui_url = f"http://{ingress_fqdn}"
-            allure_info["ingress_fqdn"] = ingress_fqdn
-            allure_service_output = allure_service_template.render(allure_info=allure_info)
-            allure_ingress_output = allure_ingress_template.render(allure_info=allure_info)
-            allure_service_yaml = yaml.safe_load(allure_service_output)
-            allure_ingress_yaml = yaml.safe_load(allure_ingress_output)
+    if allure_info.expose_type == "ingress":
+        if len(allure_info.ingress_fqdn) > 0:
+            allure_service_yaml = j2_template.allure_service_yaml
+            allure_ingress_yaml = j2_template.allure_ingress_yaml
             kopf.adopt(allure_service_yaml)
             kopf.adopt(allure_ingress_yaml)
         else:
             raise kopf.PermanentError("ingress data wrong") 
-    allure_pvc_output = allure_pvc_template.render(allure_info=allure_info)
-    allure_configmap_api_output = allure_configmap_api_template.render(allure_info=allure_info)
-    allure_configmap_ui_output = allure_configmap_ui_template.render(allure_info=allure_info)
-    allure_deployment_output = allure_deployment_template.render(allure_info=allure_info)
-    allure_pvc_yaml = yaml.safe_load(allure_pvc_output)
-    allure_configmap_api_yaml = yaml.safe_load(allure_configmap_api_output)
-    allure_configmap_ui_yaml = yaml.safe_load(allure_configmap_ui_output)
-    allure_deployment_yaml = yaml.safe_load(allure_deployment_output)
+    allure_pvc_yaml = j2_template.allure_pvc_yaml
+    allure_configmap_api_yaml = j2_template.allure_configmap_api_yaml
+    allure_configmap_ui_yaml = j2_template.allure_configmap_ui_yaml
+    allure_deployment_yaml = j2_template.allure_deployment_yaml
     kopf.adopt(allure_pvc_yaml)
     kopf.adopt(allure_configmap_api_yaml)
     kopf.adopt(allure_configmap_ui_yaml)
     kopf.adopt(allure_deployment_yaml)
-    if not os.getenv("KUBERNETES_SERVICE_HOST"):
-        kube_config = f"{str(Path.home())}/.kube/config"
-        config.load_kube_config(kube_config)
-    apps_api = client.AppsV1Api()
-    core_api = client.CoreV1Api()
-    network_api = client.NetworkingV1Api()
     try:
-        allure_pvc = core_api.create_namespaced_persistent_volume_claim(namespace=namespace, body=allure_pvc_yaml)
-        allure_configmap_api = core_api.create_namespaced_config_map(namespace=namespace, body=allure_configmap_api_yaml) 
-        allure_configmap_ui = core_api.create_namespaced_config_map(namespace=namespace, body=allure_configmap_ui_yaml)
-        allure_deployment = apps_api.create_namespaced_deployment(namespace=namespace, body=allure_deployment_yaml)
-        if expose_type == "nodeport":
-            allure_nodeport = core_api.create_namespaced_service(namespace=namespace, body=allure_nodeport_yaml)
-        if expose_type == "ingress":
-            allure_service = core_api.create_namespaced_service(namespace=namespace, body=allure_service_yaml)
-            allure_ingress = network_api.create_namespaced_ingress(namespace=namespace, body=allure_ingress_yaml)
+#        print(allure_configmap_ui_yaml)
+        allure_pvc = kube_tool.create_namespaced_persistent_volume_claim(namespace=namespace, body=allure_pvc_yaml)
+        allure_configmap_api = kube_tool.create_namespaced_config_map(namespace=namespace, body=allure_configmap_api_yaml) 
+        allure_configmap_ui = kube_tool.create_namespaced_config_map(namespace=namespace, body=allure_configmap_ui_yaml)
+        allure_deployment = kube_tool.create_namespaced_deployment(namespace=namespace, body=allure_deployment_yaml)
+        if allure_info.expose_type == "nodeport":
+            allure_nodeport = kube_tool.create_namespaced_service(namespace=namespace, body=allure_nodeport_yaml)
+#            print(allure_nodeport_yaml)
+        if allure_info.expose_type == "ingress":
+            allure_service = kube_tool.create_namespaced_service(namespace=namespace, body=allure_service_yaml)
+            allure_ingress = kube_tool.create_namespaced_ingress(namespace=namespace, body=allure_ingress_yaml)
+#            print(allure_ingress_yaml)
         return {
             "PVC": allure_pvc.metadata.name,
             "CONFIGMAP_API": allure_configmap_api.metadata.name,
             "CONFIGMAP_UI": allure_configmap_ui.metadata.name,
             "DEPLOYMENT": allure_deployment.metadata.name,
-            "UI": ui_url
+            "UI": allure_info.ui_url
             }
     except ApiException as e:
         raise kopf.PermanentError("Exception: %s\n" % e)

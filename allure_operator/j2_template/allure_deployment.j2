@@ -11,8 +11,8 @@ spec:
     spec:
       containers:
         - name: allure
-          image: 'frankescobar/allure-docker-service'
-          imagePullPolicy: Always
+          image: 'frankescobar/allure-docker-service:2.19.0'
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5050
           securityContext:
@@ -27,8 +27,8 @@ spec:
             - name: reports-volume
               mountPath: /app/projects
         - name: allure-ui
-          image: 'frankescobar/allure-docker-service-ui'
-          imagePullPolicy: Always
+          image: 'frankescobar/allure-docker-service-ui:7.0.3'
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5252
           securityContext:

@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: allure-config-ui-map
 data:
-  ALLURE_DOCKER_PUBLIC_API_URL: {{ allure_info["api_public_url"] }}
+  ALLURE_DOCKER_PUBLIC_API_URL: {{ allure_info.api_public_url }}
   ALLURE_DOCKER_PUBLIC_API_URL_PREFIX: "/allure-api"
   URL_PREFIX: "/allure-ui"
