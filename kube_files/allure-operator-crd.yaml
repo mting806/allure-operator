@@ -37,6 +37,8 @@ spec:
                   rule: self.loop_timer == oldSelf.loop_timer
                 - message: Value is immutable
                   rule: self.pvc_size == oldSelf.pvc_size
+                - message: Value is immutable
+                  rule: self.keep_history_num == oldSelf.keep_history_num
               properties:
                 expose_type:
                   type: string
@@ -64,6 +66,8 @@ spec:
                     - no
                 loop_pytest_image:
                   type: string
+                keep_history_num:
+                  type: integer
                 pytest_cmd:
                   type: string
               required:
@@ -74,6 +78,7 @@ spec:
                 - loop_pytest_image
                 - pvc_size
                 - pytest_cmd
+                - keep_history_num
       additionalPrinterColumns:
         - name: TYPE
           type: string

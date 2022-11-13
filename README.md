@@ -41,6 +41,7 @@ spec:
   nodeport_api_port: 30008
   nodeport_ui_port: 30009
   nodeport_ext_ip: 192.168.88.70
+  keep_history_num: 200
   ingress_fqdn: allure.test
   storage_class: nfs-client
   pvc_size: 1Gi
@@ -55,10 +56,11 @@ spec:
 ```
 expose_type(string)(immutable): "ingress" or "nodeport"  
 storage_class(string)(immutable): the storage class name  
-loop_pytest(bool): "yes" or "no"  
 loop_timer(int)(immutable): pytest loop timer in second  
 loop_pytest_image(string): pytest image   
 pvc_size(string)(immutable): pvc size
+keep_history_num(string)(immutable): keep test history number
+loop_pytest(bool): "yes" or "no" run loop pytest or not  
 pytest_cmd(string): pytest command in pytest_loop deployment
 ```
 #### Optional parameters:  

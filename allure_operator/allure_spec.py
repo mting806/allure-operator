@@ -17,6 +17,7 @@ class AllureSpec(object):
     ingress_fqdn: str  = None
     api_public_url: str = field(init=False)
     ui_url: str = field(init=False)
+    keep_history_num: int = field(init=False)
     def __post_init__(self, spec: dict):
         self.expose_type = spec["expose_type"]
         self.storage_class = spec["storage_class"]
@@ -25,6 +26,7 @@ class AllureSpec(object):
         self.loop_pytest_image = spec["loop_pytest_image"] 
         self.pvc_size = spec["pvc_size"]
         self.pytest_cmd = spec["pytest_cmd"]
+        self.keep_history_num = spec["keep_history_num"]
         if self.expose_type == "nodeport":
             self.nodeport_ext_ip = spec["nodeport_ext_ip"]
             self.nodeport_api_port = spec["nodeport_api_port"]
